@@ -1,17 +1,17 @@
 %YAML 1.2
 ---
-name: Z80 Assembly
-uuid: EDE7FFE3-F4DD-4BE1-94D9-ED7F973D2237
+name: Intel 8080 Assembly
+uuid: A5D56371-A6EA-49DC-99B5-3CEA4E905A1F
 file_extensions: [asm, s, ASM, S]
-scope: source.z80
+scope: source.i8080
 
 variables:
   address: '(?:&[HX][0-9a-fA-F]{4}|[$#&][0-9a-fA-F]{4}|\b0X[0-9a-fA-F]{4}|\b0[a-fA-F]{4}H|\b[0-9]{4}H|[0-9]{4,5}D)\b'
   binary: '(?:%[01]+|[01]+B)\b'
   comment: '(?:;.+)'
-  conditionals: '(?i)\b(?:NC|NZ|PE|PO|C|M|P|Z)\b'
-  decimal: '(?:[0-9]+D|[0-9]+)'
-  hexidecimal: '(?:&[HX][0-9a-fA-F]{2}|[$#&][0-9a-fA-F]{2}|\b0X[0-9a-fA-F]{2}|\b0[a-fA-F]{2}H|\b[0-9]{2}H)\b'
+  conditionals: '(?i)(?:NC|NZ|PE|PO|C|M|P|Z)\b'
+  decimal: '\b(?:[0-9]+D|[0-9]+)'
+  hexidecimal: '(?:&[HX][0-9a-fA-F]{2}|[$#&][0-9a-fA-F]{2}|\b0[Xx][0-9a-fA-F]{2}|\b0[a-fA-F]{2}H|\b[0-9]{2}H|\b0[0-9a-fA-F]+[hH])\b'
   label: '\b[a-zA-Z][a-zA-Z0-9_]*[a-zA-Z0-9]\b'
   label_multi: '{{label}}(?:[~&^|+-]{{label}})*'
   number: '(?:{{binary}}|{{octal}}|{{hexidecimal}}|{{decimal}})'
@@ -40,151 +40,148 @@ contexts:
   registers:
     - match: '(?i)\b(AF|BC|DE|HL)'''
       comment: '16-bit shadow registers (note: escaped single quote)'
-      scope: variable.other.z80
-    - match: '(?i)\b(AF|BC|DE|HL|PC|SP|IX|IY)\b'
+      scope: variable.other.i8080
+    - match: '(?i)\b(AF|BC|DE|HL|PC|SP)\b'
       comment: '16-bit registers'
-      scope: variable.other.z80
-    - match: '(?i)\((AF|BC|DE|HL|SP|IX|IY|{{number}}|{{label}})(?:[+-]{{number}})?\)'
+      scope: variable.other.i8080
+    - match: '(?i)\((AF|BC|DE|HL|SP|{{number}}|{{label}})(?:[+-]{{number}})?\)'
       comment: 'Pointer to 16-bit register/address (incl. offsets)'
-      scope: variable.parameter.z80
-    - match: '(?i)\b(HX|HY|LX|LY)\b'
-      comment: 'Undocumented 8-bit registers'
-      scope: variable.other.z80
-    - match: '(?i)\b([ABCDEFHILR]|IXH|IXL|IYH|IYL|LX|LY|YL|YH)\b'
+      scope: variable.parameter.i8080
+    - match: '(?i)\b([ABCDEFHILR])\b'
       comment: '8-bit registers'
-      scope: variable.other.z80
+      scope: variable.other.i8080
 
   opcodes:
-    - match: '(?i)\b(CALL|JP|JR|DJNZ)\s+({{conditionals}}), ?({{address}}|{{label}})\b'
+    - match: '(?i)\b(CALL|J)({{conditionals}}) +({{address}}|{{label}})\b'
       comment: 'Calls and jumps, with a condition'
       captures:
-        1: keyword.control.z80
-        2: keyword.control.conditional.z80
-        3: variable.function.z80
-    - match: '(?i)\b(CALL|JP|JR|DJNZ)\s+({{address}}|{{label}})\b'
+        1: keyword.control.i8080
+        2: keyword.control.conditional.i8080
+        3: variable.function.i8080
+    - match: '(?i)\b(CALL|JMP|JR)\s+({{address}}|{{label}})\b'
       captures:
-        1: keyword.control.z80
-        2: variable.function.z80
-    - match: '(?i)\b(JP)\s+(\((HL|IX|IY)\))'
+        1: keyword.control.i8080
+        2: variable.function.i8080
+    - match: '(?i)\b(JMP)\s+(\((HL)\))'
       comment: 'Jumps using 16-bit registers'
       captures:
-        1: keyword.control.z80
-        2: variable.parameter.z80
+        1: keyword.control.i8080
+        2: variable.parameter.i8080
     - match: '(?i)\b(RET)(\s+{{conditionals}})?\b'
       comment: 'RETurn, with an optional condition'
       captures:
-        1: keyword.control.z80
-        2: keyword.control.conditional.z80
+        1: keyword.control.i8080
+        2: keyword.control.conditional.i8080
     - match: '(?i)\b(RST) +(?:({{number}})|({{label}}))\b'
       captures:
-        1: keyword.control.z80
+        1: keyword.control.i8080
         2: constant.numeric
-        3: variable.function.z80
-    - match: '(?i)\b(ADC|ADD|BIT|CCF|CP|CPL|CPD|CPDR|CPI|CPIR|DAA|DEC|DI|DJNZ|EI|EX|EXX|HALT|IM|IN|INC|IND|INDR|INF|INI|INIR||NEG|NOP|EXX|OR|OTDR|OTIR|OUT|OUTD|OUTI|POP|PUSH|RES|RETI|RETN|RL|RLA|RLC|RLCA|RLD|RR|RRA|RRC|RRCA|RRD|SBC|SCF|SET|SLA|SLI|SLL|SRA|SRL|SUB)\b'
-      scope: keyword.control.z80
-    - match: '(?i)\b(LD|LDD|LDDR|LDI|LDIR)\b'
-      scope: keyword.control.z80
+        3: variable.function.i8080
+    - match: '(?i)\b(OUT|IN|ORA|ANDA|XRA|INR|INX|PUSH|POP|ANI|CMA|LDA|SHLD|RRC|STA|DAD|LXI|RAL|ORI|CPI|HLT|RNC)\b'
+      scope: keyword.control.i8080
+    - match: '(?i)\b(MVI|MOV)\b'
+      scope: keyword.control.i8080
 
   operators:
     - match: '(?i)\b(AND|DEFINED|EQ|GE|GT|HIGH|LE|LOW|LT|MOD|NE|NOT|NUL|OR|SHL|SHR|XOR)\b'
-      scope: keyword.control.z80
+      scope: keyword.control.i8080
     - match: '\s(!=|##|&&|<<|<=|>>|>=|\|\||[&$%*+/=?~><|!-])\s'
-      scope: keyword.control.z80
+      scope: keyword.control.i8080
 
   identifiers:
     - match: '(?i)(^|\s+)(DEFL|MACRO|IRP|REPT|EXITM|ENDM)\s'
-      scope: keyword.control.z80
+      scope: keyword.control.i8080
 
   directives:
     - match: '(?i)(^|\s+)(INCBIN|INCLUDE)\s'
-      scope: keyword.control.import.z80
+      scope: keyword.control.import.i8080
     - match: '(?i)(^|\s+)(LOCAL|ORG|END|PUBLIC)\s'
-      scope: keyword.control.z80
+      scope: keyword.control.i8080
     - match: '(?i)(^|\s+)(PROC|ENDP)\s'
-      scope: keyword.control.z80
+      scope: keyword.control.i8080
     - match: '(?i)(^|\s+)\.(ERROR|SHIFT|WARNING)\s'
-      scope: keyword.control.z80
+      scope: keyword.control.i8080
     - match: '(?i)^\s*(IFNDEF|IFDEF|IF) +({{label}})\s+({{comment}})?$'
       captures:
-        1: keyword.control.z80
-        2: variable.parameter.z80
-        3: comment.line.z80
+        1: keyword.control.i8080
+        2: variable.parameter.i8080
+        3: comment.line.i8080
     - match: '(?i)(^|\s+)(ELSE|ENDIF)\s'
-      scope: keyword.control.z80
+      scope: keyword.control.i8080
     - match: '(?i)^(.+?)\s+(EQU)\s+(.+?)(\s+{{comment}})?$'
       captures:
-        1: variable.parameter.z80
-        2: keyword.control.z80
+        1: variable.parameter.i8080
+        2: keyword.control.i8080
         3: constant.numeric
-        4: comment.line.z80
+        4: comment.line.i8080
 
   directives_data:
     - match: '(?i)\b(DEF[BMSW]|DB|DS|DW) ({{label}}(,{{label}})*)\b'
       captures:
-        1: storage.type.z80
-        2: variable.parameter.z80
+        1: storage.type.i8080
+        2: variable.parameter.i8080
     - match: '(?i)\b(?:DEF[BMSW]|DB|DS|DW)\b'
-      scope: storage.type.z80
+      scope: storage.type.i8080
 
   addresses:
     - match: '{{address}}'
-      scope: constant.other.address.z80
+      scope: constant.other.address.i8080
 
   numbers:
     - match: '{{binary}}'
-      scope: constant.other.binary.z80
+      scope: constant.other.binary.i8080
     - match: '{{octal}}'
-      scope: constant.numeric.octal.z80
+      scope: constant.numeric.octal.i8080
     - match: '{{hexidecimal}}'
-      scope: constant.numeric.hex.z80
+      scope: constant.numeric.hex.i8080
     - match: '{{decimal}}'
-      scope: constant.numeric.integer.z80
+      scope: constant.numeric.integer.i8080
 
   strings:
     - match: '"'
       comment: 'Strings begin/end with double quotes'
-      scope: punctuation.definition.string.begin.z80
+      scope: punctuation.definition.string.begin.i8080
       push: inside_string
   inside_string:
     - meta_include_prototype: false
-    - meta_scope: string.quoted.double.z80
+    - meta_scope: string.quoted.double.i8080
     - match: '\\.'
-      scope: constant.character.escape.z80
+      scope: constant.character.escape.i8080
     - match: '"'
-      scope: punctuation.definition.string.end.z80
+      scope: punctuation.definition.string.end.i8080
       pop: true
 
   labels:
     - match: '^({{label}}):?'
       comment: 'Label definition'
       captures:
-        1: entity.name.function.z80
+        1: entity.name.function.i8080
     - match: '^ +({{label}}):'
       comment: 'Indented label definition'
       captures:
-        1: entity.name.function.z80
+        1: entity.name.function.i8080
     - match: '\({{label_multi}}\)'
       comment: 'Address of label'
-      scope: variable.parameter.z80
+      scope: variable.parameter.i8080
     - match: ', ?({{label_multi}})\b'
       comment: 'Labels used in instructions'
       captures:
-        1: variable.function.z80
+        1: variable.function.i8080
 
   comments:
     - match: ';'
       comment: 'Comments begin with a ";" and finish at EOL'
-      scope: punctuation.definition.comment.z80
+      scope: punctuation.definition.comment.i8080
       push:
         # This is an anonymous context push for brevity.
-        - meta_scope: comment.line.z80
+        - meta_scope: comment.line.i8080
         - match: $\n?
           pop: true
     - match: '//'
       comment: 'Comments can also begin with a "//", and finish at EOL'
-      scope: punctuation.definition.comment.z80
+      scope: punctuation.definition.comment.i8080
       push:
         # This is an anonymous context push for brevity.
-        - meta_scope: comment.line.z80
+        - meta_scope: comment.line.i8080
         - match: $\n?
           pop: true
